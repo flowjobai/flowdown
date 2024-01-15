@@ -8,15 +8,6 @@ dependencies:
   '@google-cloud/local-auth':
     specifier: ^3.0.1
     version: 3.0.1
-  '@googleapis/docs':
-    specifier: ^3.0.0
-    version: 3.0.0
-  '@googleapis/drive':
-    specifier: ^8.5.0
-    version: 8.5.0
-  google-auth-library:
-    specifier: ^9.4.2
-    version: 9.4.2
   googleapis:
     specifier: ^130.0.0
     version: 130.0.0
@@ -29,8 +20,8 @@ devDependencies:
     specifier: ^20.11.0
     version: 20.11.0
   prettier:
-    specifier: ^3.1.1
-    version: 3.1.1
+    specifier: ^3.2.1
+    version: 3.2.1
 
 packages:
 
@@ -42,26 +33,6 @@ packages:
       google-auth-library: 9.4.2
       open: 7.4.2
       server-destroy: 1.0.1
-    transitivePeerDependencies:
-      - encoding
-      - supports-color
-    dev: false
-
-  /@googleapis/docs@3.0.0:
-    resolution: {integrity: sha512-KrzopGTN5P2wkH+a0RtQUoWcuGgrEpMe1DfMb/KbdXPkaTpbR5XxKYtzW7lno/DkYDtrLrhP32XUnmoIIX2XEA==}
-    engines: {node: '>=12.0.0'}
-    dependencies:
-      googleapis-common: 7.0.1
-    transitivePeerDependencies:
-      - encoding
-      - supports-color
-    dev: false
-
-  /@googleapis/drive@8.5.0:
-    resolution: {integrity: sha512-5SIODqhdxcimwR06peQcvqAf0tEpj14oEi8dcFB/KvNaev5NRf2MqMMWA3G6dgDPdLKAX/HTmwGz8OD7oGpe8Q==}
-    engines: {node: '>=12.0.0'}
-    dependencies:
-      googleapis-common: 7.0.1
     transitivePeerDependencies:
       - encoding
       - supports-color
@@ -427,8 +398,8 @@ packages:
     engines: {node: '>=0.10.0'}
     dev: false
 
-  /prettier@3.1.1:
-    resolution: {integrity: sha512-22UbSzg8luF4UuZtzgiUOfcGM8s4tjBv6dJRT7j275NXsy2jb4aJa4NNveul5x4eqlF1wuhuR2RElK71RvmVaw==}
+  /prettier@3.2.1:
+    resolution: {integrity: sha512-qSUWshj1IobVbKc226Gw2pync27t0Kf0EdufZa9j7uBSJay1CC+B3K5lAAZoqgX3ASiKuWsk6OmzKRetXNObWg==}
     engines: {node: '>=14'}
     hasBin: true
     dev: true
