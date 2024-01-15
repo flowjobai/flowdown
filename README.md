@@ -1,4 +1,4 @@
-![Flowjob](http:./FJ.svg)
+![Flowjob](FJ.svg)
 
 # Flowjob DriveDown
 
