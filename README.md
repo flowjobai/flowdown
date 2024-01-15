@@ -2,7 +2,7 @@
 
 # DriveDown
 
-User Google Drive as your CMS.
+Use Google Drive as your CMS.
 
 ## Features
 

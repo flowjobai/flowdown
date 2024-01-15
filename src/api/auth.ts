@@ -1,10 +1,10 @@
 import { join } from "path";
 import { cwd } from "process";
 import { authenticate } from "@google-cloud/local-auth";
-import { promises as fs } from 'fs';
+import { promises as fs } from "fs";
 
 // If modifying these scopes, delete token.json.
-const SCOPES = ["https://www.googleapis.com/auth/drive.metadata.readonly", "https://www.googleapis.com/auth/documents.readonly"];
+const SCOPES = ["https://www.googleapis.com/auth/drive.readonly", "https://www.googleapis.com/auth/documents.readonly"];
 // The file token.json stores the user's access and refresh tokens, and is
 // created automatically when the authorization flow completes for the first
 // time.
@@ -27,9 +27,6 @@ if (client.credentials) {
     });
     await fs.writeFile(TOKEN_PATH, payload);
     console.log("Token saved to", TOKEN_PATH);
-}
-else {
+} else {
     console.error("No credentials");
 }
-
-

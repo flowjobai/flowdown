@@ -1,18 +1,17 @@
 {
-  "name": "drivedown",
-  "type": "module",
-  "version": "0.0.1",
-  "scripts": {
-    "prettier": "prettier -w -u src/**/*"
-  },
-  "dependencies": {
-    "@google-cloud/local-auth": "^3.0.1",
-    "commander": "^11.1.0",
-    "googleapis": "^130.0.0",
-    "mammoth": "^1.6.0"
-  },
-  "devDependencies": {
-    "@types/node": "^20.11.0",
-    "prettier": "^3.2.1"
-  }
+    "name": "drivedown",
+    "type": "module",
+    "version": "0.0.1",
+    "scripts": {
+        "prettier": "prettier -w -u src/**/*"
+    },
+    "dependencies": {
+        "@google-cloud/local-auth": "^3.0.1",
+        "commander": "^11.1.0",
+        "googleapis": "^130.0.0"
+    },
+    "devDependencies": {
+        "@types/node": "^20.11.0",
+        "prettier": "^3.2.1"
+    }
 }
