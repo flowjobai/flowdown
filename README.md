@@ -1,18 +1,18 @@
 ![Flowjob](FJ.svg)
 
-# DriveDown
+# Flowdown
 
 Use Google Drive as your CMS.
 
 ## Features
 
-DriveDown lets you author and store your content in Google drive then publish it to sources
+Flowdown lets you author and store your content in Google drive then sync it to sources
 such as Astro content collections. 
 
-DriveDown will connect to Google Drive, enumerate a designated folder and then download the content
+Flowdown will connect to Google Drive, enumerate a designated folder and then download the content
 converting file formats as needed.
 
 - Goofle Docs -> Markdown
-- Image file formats -> Optomised Images
+- Google Sheets -> CSV
 
 
