@@ -1,14 +1,36 @@
 import { program } from "commander";
+import { getFolder, Folder } from "./folder";
+import fs from "fs";
 
 // https://github.com/SBoudrias/Inquirer.js
 
 program
-    .name('drivedown')
+    .name('flowdown')
     .description('Use Google Drive as your CMS')
-    .version('0.1.0');
+
+let folderId = "";    
 
 program
-    .option("-a --auth", "authenticate with Google Drive")
-    .option("-c --cred <credentials.json>", "location of the credentials.json file");
+    .argument('<id>', 'id of the root folder')
+    .action((id) => folderId = id)
+    .option("-f --folder <string>", "limit the export to a specific folder")
+    .option("-d --dir <string>", "specify the name of the local export directory", "flowdown")
+    .parse();
 
-program.parse();
+const options = program.opts();
+
+console.log("Processing root folder", folderId);
+const root = await getFolder(folderId, options.dir);
+process(root);
+
+function process(folder: Folder) {
+    // Process this folder
+    console.log("Creating", folder.path)
+    fs.mkdirSync(folder.path, { recursive: true });
+
+    // Process any children
+    if (folder.folders) {
+        folder.folders.forEach((f) => process(f));
+    }
+}
+

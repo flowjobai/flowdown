@@ -9,32 +9,47 @@ const folderRegex = /https:\/\/drive\.google\.com\/drive\/folders\/[-_0-9a-zA-Z]
 const docsRegex = /https:\/\/docs\.google\.com\/document\/d\/[-_0-9a-zA-Z]{44}/g;
 const fileRegex = /https:\/\/drive\.google\.com\/file\/d\/[-_0-9a-zA-Z]{33}/g;
 
-async function scrapeFolder(id: string) {
-    const result = {
+interface Folder {
+    id: string;
+    path: string;
+    name: string | undefined;
+    docs: Set<string>;
+    files: Set<string>;
+    folders: Folder[];
+};
+
+const FOLDER_URL = "https://drive.google.com/drive/folders/";
+
+async function getFolder(id: string, path: string, depth = 0) {
+    const result: Folder = {
         id: id,
-        title: "",
-        folders: new Set<string>(),
+        name: undefined,
         docs: new Set<string>(),
         files: new Set<string>(),
+        folders: [] as Folder[],
+        path
     };
-    const url = "https://drive.google.com/drive/folders/" + id;
+    const url = FOLDER_URL + id;
     console.log("Fetching", url);
     const res = await fetch(url);
     const body = await res.text();
-
+    // Parse the body looking for the title and specific links
     const title = [...body.matchAll(titleRegex)];
-    result.title = title[0][0].replace("<title>", "").replace(" – Google Drive</title>", "").trim();
-    const driveLinks = [...body.matchAll(folderRegex)];
-    driveLinks.forEach((l) => result.folders.add(l[0]));
+    result.name = title[0][0].replace("<title>", "").replace(" – Google Drive</title>", "").trim();
+    const folderLinks = new Set([...body.matchAll(folderRegex)].filter((l) => l[0] !== url).map((l) => l[0]));
     const docLinks = [...body.matchAll(docsRegex)];
     docLinks.forEach((l) => result.docs.add(l[0]));
     const fileLinks = [...body.matchAll(fileRegex)];
     fileLinks.forEach((l) => result.files.add(l[0]));
 
+    // Recursively fetch the children
+    for (const folder of folderLinks) {
+        const childPath = depth ? path + "/" + result.name : result.path;
+        const child = await getFolder(folder.replace(FOLDER_URL, ""), childPath, depth + 1);
+        result.folders.push(child);
+    }
+
     return result;
 }
 
-const res = await scrapeFolder("1aK91jp8954KOTOo5fJC4NUdwArqQyBvE");
-console.log(res);
-
-export {};
+export { getFolder, type Folder };
