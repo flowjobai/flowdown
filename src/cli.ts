@@ -1,9 +1,9 @@
 import { program } from "commander";
-import { getFolder, Folder } from "./folder";
+import { getFolders, Folder } from "./folder";
 import fs from "fs";
 import { exportDoc } from "./docs";
+import { exportSheet } from "./sheets";
 import { exportFile } from "./file";
-
 
 program
     .name('flowdown')
@@ -22,26 +22,25 @@ const options = program.opts();
 
 console.log("Processing root folder", folderId);
 try {
-    const root = await getFolder(folderId, options.dir);
-    await process(root);   
+    const folders = await getFolders(folderId, options.dir);
+    for (const folder of folders) {
+        const path = folder.path + "/" + folder.name;
+        console.log("Processing", folder.id, path);
+        // Process this folder
+        fs.mkdirSync(path, { recursive: true });
+        // Export any docs
+        for (const id of folder.docs) {
+            await exportDoc(id, path);
+        }
+        for (const id of folder.sheets) {
+            await exportSheet(id, path);
+        }
+        for (const id of folder.files) {
+            await exportFile(id, path);
+        }
+    }   
 }
 catch (e) {
     console.error("Error processing root folder", folderId, e.message);
-}
-
-async function process(folder: Folder) {
-    // Process this folder
-    fs.mkdirSync(folder.path, { recursive: true });
-    // Export any docs
-    for (const id of folder.docs) {
-        await exportDoc(id, folder.path);
-    }
-    for (const id of folder.files) {
-        await exportFile(id, folder.path);
-    }
-    // Process any children
-    if (folder.folders) {
-        folder.folders.forEach((f) => process(f));
-    }
 }
 

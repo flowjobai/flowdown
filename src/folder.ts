@@ -7,6 +7,7 @@
 const titleRegex = /<title>.* – Google Drive<\/title>/g;
 const folderRegex = /https:\/\/drive\.google\.com\/drive\/folders\/[-_0-9a-zA-Z]{33}/g;
 const docsRegex = /https:\/\/docs\.google\.com\/document\/d\/[-_0-9a-zA-Z]{44}/g;
+const sheetsRegex = /https:\/\/docs\.google\.com\/spreadsheets\/d\/[-_0-9a-zA-Z]{44}/g;
 const fileRegex = /https:\/\/drive\.google\.com\/file\/d\/[-_0-9a-zA-Z]{33}/g;
 
 interface Folder {
@@ -14,8 +15,8 @@ interface Folder {
     path: string;
     name: string | undefined;
     docs: string[];
+    sheets: string[];
     files: string[];
-    folders: Folder[];
 };
 
 const FOLDER_URL = "https://drive.google.com/drive/folders/";
@@ -23,17 +24,17 @@ const FOLDER_URL = "https://drive.google.com/drive/folders/";
 /**
  * Get a folder and all of its children
  */
-async function getFolder(id: string, path: string, depth = 0) {
+async function getFolders(id: string, path: string, folders: Folder[] = []) {
     const folder: Folder = {
         id: id,
         path,
         name: undefined,
         docs: [],
+        sheets: [],
         files: [],
-        folders: []
     };
     const url = FOLDER_URL + id;
-    console.log("Fetching", url, path);
+    console.log("Fetching", id, path);
     const res = await fetch(url);
     if (res.status !== 200) {
         throw new Error(res.status + " " + res.statusText);
@@ -44,14 +45,15 @@ async function getFolder(id: string, path: string, depth = 0) {
     folder.name = title[0][0].replace("<title>", "").replace(" – Google Drive</title>", "").trim();
     // Get the links out of the body 
     folder.docs = getUrlIds(body, docsRegex);
+    folder.sheets = getUrlIds(body, sheetsRegex);
     folder.files = getUrlIds(body, fileRegex);
+    folders.push(folder);
     // Recursively fetch the children
     const folderIds = getUrlIds(body, folderRegex, id);
     for (const id of folderIds) {
-        const child = await getFolder(id, path + "/" + folder.name, depth + 1);
-        folder.folders.push(child);
+        await getFolders(id, path + "/" + folder.name, folders);
     }
-    return folder;
+    return folders;
 }
 
 function getUrlIds(body: string, regex: RegExp, exclude?: string) {
@@ -68,4 +70,4 @@ function getUrlIds(body: string, regex: RegExp, exclude?: string) {
     return [...ids.values()];
 }
 
-export { getFolder, type Folder };
+export { getFolders, type Folder };
