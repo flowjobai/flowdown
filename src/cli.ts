@@ -1,8 +1,7 @@
 import { program } from "commander";
 import { getFolder, Folder } from "./folder";
 import fs from "fs";
-
-// https://github.com/SBoudrias/Inquirer.js
+import { exportDoc } from "./docs";
 
 program
     .name('flowdown')
@@ -21,13 +20,15 @@ const options = program.opts();
 
 console.log("Processing root folder", folderId);
 const root = await getFolder(folderId, options.dir);
-process(root);
+await process(root);
 
-function process(folder: Folder) {
+async function process(folder: Folder) {
     // Process this folder
-    console.log("Creating", folder.path)
     fs.mkdirSync(folder.path, { recursive: true });
-
+    // Export any docs
+    for (const id of folder.docs) {
+        await exportDoc(id, folder.path);
+    }
     // Process any children
     if (folder.folders) {
         folder.folders.forEach((f) => process(f));

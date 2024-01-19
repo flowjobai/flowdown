@@ -12,20 +12,27 @@ const DOC_URL = "https://docs.google.com/document/export?format=docx&id=";
 async function exportDoc(id: string, path: string) {
     const url = DOC_URL + id;
     const pass = new PassThrough();
-    // Get the docx file
+    // Get the docx file into a memory buffer
     console.log("Fetching", url);
-    let filename: string | undefined = await new Promise((resolve, reject) => {
-        https.get(url, (response: any) => { 
-            response.pipe(pass);
-            pass.on('finish', () => {
-                // Resolve the promise with the content-disposition header for the filename
-                resolve(response.headers["content-disposition"]);
-            });
-            pass.on('error', (err) => {
-                reject(err);
+    let filename: string | undefined;
+    try {
+        filename = await new Promise((resolve, reject) => {
+            https.get(url, (response: any) => { 
+                response.pipe(pass);
+                pass.on('finish', () => {
+                    // Resolve the promise with the content-disposition header for the filename
+                    resolve(response.headers["content-disposition"]);
+                });
+                pass.on('error', (err) => {
+                    reject(err);
+                });
             });
         });
-    });
+    }
+    catch (e) {
+        console.error("Error fetching", url, e);
+        return;
+    }
     // Get the filename from the content-disposition header if available (should always be)
     filename = filename ? filename.split('"')[1] : id;
     // Convert the stream to a buffer
@@ -51,7 +58,7 @@ async function exportDoc(id: string, path: string) {
     console.log("Markdown written to", fullPath);
 }
 
-// Make adjustments to a converted table html before converting to markdown
+// Make adjustments to a table's html, making it frendly for turndown
 function table(html: string) {
     const dom = new JSDOM(html);
     const tables = dom.window.document.body.querySelectorAll("table");
@@ -62,8 +69,9 @@ function table(html: string) {
             const row = rows[i];
             rewritten.push("<tr>");
             for (const cell of row.children) {
-                // Remove paragraphs from the cell content
+                // Make the first row a header - turndown requires this
                 rewritten.push(i ? "<td>" : "<th>");
+                // Remove paragraphs from the cell content
                 const content: string[] = []
                 for (const p of cell.children) {
                     content.push(p.innerHTML);
@@ -81,10 +89,9 @@ function table(html: string) {
 
 // Detect and handle front-matter before converting to markdown
 function frontmatter(html: string) {
-    const marker = /<p>---\s*<\/p>(.*)<p>---\s*<\/p>/gs;
-    const match = marker.exec(html);
+    const finder = /<p>---\s*<\/p>(.*)<p>---\s*<\/p>/gs;
+    const match = finder.exec(html);
     if (match) {
-        console.log("Front matter detected");
         const frontmatter = match[1]; 
         const dom = new JSDOM(frontmatter);
         const p = dom.window.document.body.querySelectorAll("p");
@@ -94,7 +101,7 @@ function frontmatter(html: string) {
         }
         text.push("---");
         return {
-            body: html.replace(marker, ""),
+            body: html.replace(finder, ""),
             frontmatter: text.join("\n")
         }
     }
