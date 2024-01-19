@@ -12,7 +12,7 @@ import { getFolders, Folder } from "../src/folder";
 //const folders = await getFolders("1aK91jp8954KOTOo5fJC4NUdwArqQyBvE", "flowdown");
 //folders.forEach((folder: Folder) => { console.log(folder.id, folder.path, folder.name) });
 
-const folders = await getFolders("1OCffwNxcTqN603Exu81yahOMkNKELUKo", "security");
+const folders = await getFolders("1aK91jp8954KOTOo5fJC4NUdwArqQyBvE", "flowdown");
 console.log(folders);
 
 

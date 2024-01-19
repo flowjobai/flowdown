@@ -14,29 +14,40 @@ let folderId = "";
 program
     .argument('<id>', 'id of the root folder')
     .action((id) => folderId = id)
-    .option("-f --folder <string>", "limit the export to a specific folder")
-    .option("-d --dir <string>", "specify the name of the local export directory", "flowdown")
+    .option("-f --folder <string>", "export a specific folder")
+    .option("-d --dir <string>", "the local export directory", "flowdown")
     .parse();
 
 const options = program.opts();
 
-console.log("Processing root folder", folderId);
+console.log("Exporting root folder", folderId);
 try {
+    fs.mkdirSync(options.dir, { recursive: true });
     const folders = await getFolders(folderId, "");
     for (const folder of folders) {
-        const path = [options.dir, folder.path, folder.name].join("/");
-        console.log("Processing", folder.id, path);
-        // Process this folder
-        fs.mkdirSync(path, { recursive: true });
-        // Export any docs
-        for (const id of folder.docs) {
-            await exportDoc(id, path);
+        console.log("Processing", folder.id);
+        let path: string;
+        if (folder.root) {
+            path = options.dir;
         }
-        for (const id of folder.sheets) {
-            await exportSheet(id, path);
+        else {
+            path = [options.dir, folder.path, folder.name].filter(dir => dir !== "") .join("/");
         }
-        for (const id of folder.files) {
-            await exportFile(id, path);
+        if (options.folder == undefined || path.startsWith(options.dir + "/" + options.folder)) {
+            fs.mkdirSync(path, { recursive: true });
+            // Export any docs
+            for (const id of folder.docs) {
+                await exportDoc(id, path);
+            }
+            for (const id of folder.sheets) {
+                await exportSheet(id, path);
+            }
+            for (const id of folder.files) {
+                await exportFile(id, path);
+            }
+        }
+        else {
+            console.log("Excluding", folder.id);
         }
     }   
 }

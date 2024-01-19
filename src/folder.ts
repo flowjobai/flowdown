@@ -13,6 +13,7 @@ const fileRegex = /https:\/\/drive\.google\.com\/file\/d\/[-_0-9a-zA-Z]{33}/g;
 interface Folder {
     id: string;
     path: string;
+    root: boolean;
     name: string | undefined;
     docs: string[];
     sheets: string[];
@@ -24,10 +25,11 @@ const FOLDER_URL = "https://drive.google.com/drive/folders/";
 /**
  * Get a folder and all of its children
  */
-async function getFolders(id: string, filter: string, path: string = "", folders: Folder[] = [], depth: number = 0) {
+async function getFolders(id: string, filter: string, path: string = "", folders: Folder[] = [], root = true) {
     const folder: Folder = {
         id: id,
         path,
+        root,
         name: undefined,
         docs: [],
         sheets: [],
@@ -50,9 +52,9 @@ async function getFolders(id: string, filter: string, path: string = "", folders
     folders.push(folder);
     // Recursively fetch the children
     const folderIds = getUrlIds(body, folderRegex, id);
-    const childPath = depth === 0 ? "" : path + "/" + folder.name;
+    const childPath = root ? "" : path + "/" + folder.name;
     for (const id of folderIds) {
-        await getFolders(id, filter, childPath, folders, depth + 1);
+        await getFolders(id, filter, childPath, folders, false);
     }
     return folders;
 }
