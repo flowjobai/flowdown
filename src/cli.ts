@@ -22,9 +22,9 @@ const options = program.opts();
 
 console.log("Processing root folder", folderId);
 try {
-    const folders = await getFolders(folderId, options.dir);
+    const folders = await getFolders(folderId, "");
     for (const folder of folders) {
-        const path = folder.path + "/" + folder.name;
+        const path = [options.dir, folder.path, folder.name].join("/");
         console.log("Processing", folder.id, path);
         // Process this folder
         fs.mkdirSync(path, { recursive: true });

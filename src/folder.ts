@@ -24,7 +24,7 @@ const FOLDER_URL = "https://drive.google.com/drive/folders/";
 /**
  * Get a folder and all of its children
  */
-async function getFolders(id: string, path: string, folders: Folder[] = []) {
+async function getFolders(id: string, filter: string, path: string = "", folders: Folder[] = [], depth: number = 0) {
     const folder: Folder = {
         id: id,
         path,
@@ -50,8 +50,9 @@ async function getFolders(id: string, path: string, folders: Folder[] = []) {
     folders.push(folder);
     // Recursively fetch the children
     const folderIds = getUrlIds(body, folderRegex, id);
+    const childPath = depth === 0 ? "" : path + "/" + folder.name;
     for (const id of folderIds) {
-        await getFolders(id, path + "/" + folder.name, folders);
+        await getFolders(id, filter, childPath, folders, depth + 1);
     }
     return folders;
 }
