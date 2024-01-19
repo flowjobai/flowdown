@@ -7,12 +7,15 @@
   "author": "Flowjob Devs",
   "license": "Apache-2.0",
   "scripts": {
+    "build": "bun build ./src/index.ts --outdir ./.build --target bun",
     "prettier": "prettier -w -u src/**/*"
   },
   "dependencies": {
     "commander": "^11.1.0",
+    "esbuild": "^0.19.11",
     "jsdom": "^23.2.0",
     "mammoth": "^1.6.0",
+    "node-html-markdown": "^1.3.0",
     "turndown": "^7.1.2",
     "turndown-plugin-gfm": "^1.0.2"
   },

@@ -18,7 +18,7 @@ interface Folder {
     docs: string[];
     sheets: string[];
     files: string[];
-};
+}
 
 const FOLDER_URL = "https://drive.google.com/drive/folders/";
 
@@ -45,7 +45,7 @@ async function getFolders(id: string, filter: string, path: string = "", folders
     // Parse the body looking for the title and specific links
     const title = [...body.matchAll(titleRegex)];
     folder.name = title[0][0].replace("<title>", "").replace(" – Google Drive</title>", "").trim();
-    // Get the links out of the body 
+    // Get the links out of the body
     folder.docs = getUrlIds(body, docsRegex);
     folder.sheets = getUrlIds(body, sheetsRegex);
     folder.files = getUrlIds(body, fileRegex);

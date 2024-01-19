@@ -1,4 +1,4 @@
-import { downloadFile } from './file';
+import { downloadFile } from "./file";
 
 const SHEETS_URL = "https://docs.google.com/spreadsheets/d/${id}/export?format=csv&id=${id}&gid=0";
 
