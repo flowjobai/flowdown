@@ -1,43 +1,23 @@
-import { https } from 'follow-redirects';
 import fs from 'fs';
 import mammoth from 'mammoth';
 import Turndown from 'turndown';
 import plugin from 'turndown-plugin-gfm'
-import { PassThrough } from 'stream';
-import toArray from 'stream-to-array';
-import {JSDOM} from 'jsdom';
+import { JSDOM } from 'jsdom';
 
 const DOC_URL = "https://docs.google.com/document/export?format=docx&id=";
 
 async function exportDoc(id: string, path: string) {
     const url = DOC_URL + id;
-    const pass = new PassThrough();
     // Get the docx file into a memory buffer
     console.log("Fetching", url);
-    let filename: string | undefined;
-    try {
-        filename = await new Promise((resolve, reject) => {
-            https.get(url, (response: any) => { 
-                response.pipe(pass);
-                pass.on('finish', () => {
-                    // Resolve the promise with the content-disposition header for the filename
-                    resolve(response.headers["content-disposition"]);
-                });
-                pass.on('error', (err) => {
-                    reject(err);
-                });
-            });
-        });
-    }
-    catch (e) {
-        console.error("Error fetching", url, e);
-        return;
-    }
+    const response = await fetch(url);
+    if (!response.ok) {
+        throw new Error(`Unable to fetch ${url} - ${response.status}`);
+    }    
     // Get the filename from the content-disposition header if available (should always be)
-    filename = filename ? filename.split('"')[1] : id;
-    // Convert the stream to a buffer
-    const parts = await toArray(pass);
-    const buffer = Buffer.concat(parts.map(part => Buffer.isBuffer(part) ? part : Buffer.from(part)));
+    let filename = response.headers.has('content-disposition') ? response.headers.get('content-disposition')!.split('"')[1] : id;;
+    const arrayBuffer = await response.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
     // Convert to html
     const conversion = await mammoth.convertToHtml({buffer: buffer});
     // Remove the non printing characters that docs code block adds

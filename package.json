@@ -1,25 +1,30 @@
 {
-  "name": "drivedown",
-  "type": "module",
-  "version": "0.0.1",
-  "scripts": {
-    "prettier": "prettier -w -u src/**/*"
-  },
-  "dependencies": {
-    "commander": "^11.1.0",
-    "follow-redirects": "^1.15.5",
-    "jsdom": "^23.2.0",
-    "mammoth": "^1.6.0",
-    "stream-to-array": "^2.3.0",
-    "turndown": "^7.1.2",
-    "turndown-plugin-gfm": "^1.0.2"
-  },
-  "devDependencies": {
-    "@types/jsdom": "^21.1.6",
-    "@types/node": "^20.11.0",
-    "@types/stream-to-array": "^2.3.3",
-    "@types/turndown": "^5.0.4",
-    "bun-types": "^1.0.23",
-    "prettier": "^3.2.1"
-  }
+    "name": "flowdown",
+    "type": "module",
+    "version": "1.0.0",
+    "description": "Use a public Google Drive folder as a CMS for a static website",
+    "repository": "https://github.com/getflowjob/flowdown",
+    "author": "Flowjob Devs",
+    "license": "Apache-2.0",
+    "scripts": {
+        "prettier": "prettier -w -u src/**/*"
+    },
+    "dependencies": {
+        "commander": "^11.1.0",
+        "follow-redirects": "^1.15.5",
+        "jsdom": "^23.2.0",
+        "mammoth": "^1.6.0",
+        "stream-to-array": "^2.3.0",
+        "turndown": "^7.1.2",
+        "turndown-plugin-gfm": "^1.0.2"
+    },
+    "devDependencies": {
+        "@types/follow-redirects": "^1.14.4",
+        "@types/jsdom": "^21.1.6",
+        "@types/node": "^20.11.0",
+        "@types/stream-to-array": "^2.3.3",
+        "@types/turndown": "^5.0.4",
+        "bun-types": "^1.0.23",
+        "prettier": "^3.2.1"
+    }
 }

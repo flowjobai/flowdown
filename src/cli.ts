@@ -2,6 +2,8 @@ import { program } from "commander";
 import { getFolder, Folder } from "./folder";
 import fs from "fs";
 import { exportDoc } from "./docs";
+import { exportFile } from "./file";
+
 
 program
     .name('flowdown')
@@ -19,8 +21,13 @@ program
 const options = program.opts();
 
 console.log("Processing root folder", folderId);
-const root = await getFolder(folderId, options.dir);
-await process(root);
+try {
+    const root = await getFolder(folderId, options.dir);
+    await process(root);   
+}
+catch (e) {
+    console.error("Error processing root folder", folderId, e.message);
+}
 
 async function process(folder: Folder) {
     // Process this folder
@@ -28,6 +35,9 @@ async function process(folder: Folder) {
     // Export any docs
     for (const id of folder.docs) {
         await exportDoc(id, folder.path);
+    }
+    for (const id of folder.files) {
+        await exportFile(id, folder.path);
     }
     // Process any children
     if (folder.folders) {

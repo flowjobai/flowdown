@@ -20,6 +20,9 @@ interface Folder {
 
 const FOLDER_URL = "https://drive.google.com/drive/folders/";
 
+/**
+ * Get a folder and all of its children
+ */
 async function getFolder(id: string, path: string, depth = 0) {
     const folder: Folder = {
         id: id,
@@ -32,6 +35,9 @@ async function getFolder(id: string, path: string, depth = 0) {
     const url = FOLDER_URL + id;
     console.log("Fetching", url, path);
     const res = await fetch(url);
+    if (res.status !== 200) {
+        throw new Error(res.status + " " + res.statusText);
+    }
     const body = await res.text();
     // Parse the body looking for the title and specific links
     const title = [...body.matchAll(titleRegex)];
