@@ -1,99 +1,107 @@
-import StreamZip from 'node-stream-zip';
 import { https } from 'follow-redirects';
 import fs from 'fs';
-import jsdom from 'jsdom';
-const { JSDOM } = jsdom;
 import mammoth from 'mammoth';
+import Turndown from 'turndown';
+import plugin from 'turndown-plugin-gfm'
+import { PassThrough } from 'stream';
+import toArray from 'stream-to-array';
+import {JSDOM} from 'jsdom';
 
 const DOC_URL = "https://docs.google.com/document/export?format=docx&id=";
 
 async function exportDoc(id: string, path: string) {
     const url = DOC_URL + id;
-    const file = fs.createWriteStream(`${path}/${new Date().getTime()}.docx`);
+    const pass = new PassThrough();
     // Get the docx file
     console.log("Fetching", url);
-    await new Promise((resolve, reject) => {
+    let filename: string | undefined = await new Promise((resolve, reject) => {
         https.get(url, (response: any) => { 
-            response.pipe(file);
-            file.on('finish', () => {
-                resolve(null);
+            response.pipe(pass);
+            pass.on('finish', () => {
+                // Resolve the promise with the content-disposition header for the filename
+                resolve(response.headers["content-disposition"]);
             });
-            file.on('error', (err) => {
+            pass.on('error', (err) => {
                 reject(err);
             });
         });
     });
-    file.close();  
-
-    const html = await mammoth.convertToHtml({path: file.path.toString()});
-    console.log(html)
-
-    fs.rmSync(file.path.toString());
-
-    // // Extract the html file from the zip
-    // const zip = new StreamZip.async({ file: zipPath });
-    // const entries = await zip.entries()
-    // const html = Object.keys(entries).filter((entry) => { return entry.endsWith(".html") })[0];
-    // await zip.extract(html, temp);
-    // zip.close();
-    // console.log('Extracted', temp + "/" + html);
-    // // Convert to markdown
-    // const content = fs.readFileSync(temp + "/" + html, 'utf8');
-    // Cleanup
-    //fs.rmdirSync(temp, { recursive: true });
-
+    // Get the filename from the content-disposition header if available (should always be)
+    filename = filename ? filename.split('"')[1] : id;
+    // Convert the stream to a buffer
+    const parts = await toArray(pass);
+    const buffer = Buffer.concat(parts.map(part => Buffer.isBuffer(part) ? part : Buffer.from(part)));
+    // Convert to html
+    const conversion = await mammoth.convertToHtml({buffer: buffer});
+    // Remove the non printing characters that docs code block adds
+    let html = conversion.value.replace("", "").replace("", "");
+    // Adjust tables
+    html = table(html);
+    //console.log(html);
+    const fm = frontmatter(html);
+    // Convert the html to markdown
+    const turndown = new Turndown({headingStyle: "atx"}).use(plugin.gfm).addRule("break", {
+        filter: ["br"],
+        replacement: () => "<br />"
+    });
+    const markdown = fm.frontmatter + "\n" + turndown.turndown(fm.body);
+    // Write the markdown to a file 
+    const fullPath = path + "/" + filename.replace(".docx", ".md");
+    fs.writeFileSync(fullPath, markdown);
+    console.log("Markdown written to", fullPath);
 }
 
-function doc2md(doc: string) {
-    const { document } = (new JSDOM(doc)).window;
-    const impact = getImpact(document.querySelector("style")?.sheet?.cssRules);
-    console.log(impact)
-
-    const paragraphs = document.querySelector("body")?.children;
-    for (const para of paragraphs!) {
-        switch (para.tagName) {
-            case "P":
-                break;
-            case "UL":
-                break;
-            case "OL":
-                break;
-            case "TABLE":
-                break;
-            default:    
-                if (para.tagName.startsWith("H")) {
-
+// Make adjustments to a converted table html before converting to markdown
+function table(html: string) {
+    const dom = new JSDOM(html);
+    const tables = dom.window.document.body.querySelectorAll("table");
+    for (const table of tables) {
+        const rewritten: string[] = [];
+        const rows = table.querySelectorAll("tr");
+        for (let i=0; i < rows.length; i++) {
+            const row = rows[i];
+            rewritten.push("<tr>");
+            for (const cell of row.children) {
+                // Remove paragraphs from the cell content
+                rewritten.push(i ? "<td>" : "<th>");
+                const content: string[] = []
+                for (const p of cell.children) {
+                    content.push(p.innerHTML);
                 }
-        }
-    }
-}
-
-function toText(el: Element) {
-    const text = el.textContent;
-    if (text) {
-        return text;
-    }
-    return "";
-
-}
-
-function getImpact(styles: CSSRuleList | undefined) {
-    const impacts = {};
-    if (styles) {
-        for (const style of styles) {
-            const text = style.cssText;
-            const impact = {
-                bold: text.includes("700"),
-                italic: text.includes("italic"),
-                underline: text.includes("underline"),
-                strike: text.includes("line-through")
-            };
-            if (text.startsWith(".c") && (impact.bold || impact.italic || impact.underline || impact.strike)) {
-                impacts[text.split("{")[0].substring(1).trim()] = impact;
+                // Break paragraphs with a <br>
+                rewritten.push(content.join("<br>"));
+                rewritten.push(i ? "</td>" : "</th>");
             }
+            rewritten.push("</tr>");
         }
+        table.innerHTML = rewritten.join("");        
     }
-    return impacts;
+    return dom.window.document.body.innerHTML;
 }
 
-export { exportDoc, doc2md }
+// Detect and handle front-matter before converting to markdown
+function frontmatter(html: string) {
+    const marker = /<p>---\s*<\/p>(.*)<p>---\s*<\/p>/gs;
+    const match = marker.exec(html);
+    if (match) {
+        console.log("Front matter detected");
+        const frontmatter = match[1]; 
+        const dom = new JSDOM(frontmatter);
+        const p = dom.window.document.body.querySelectorAll("p");
+        const text = ["---"];
+        for (const element of p) {
+            text.push(element.textContent || "");
+        }
+        text.push("---");
+        return {
+            body: html.replace(marker, ""),
+            frontmatter: text.join("\n")
+        }
+    }
+    return {
+        body: html,
+        frontmatter: ""
+    }
+}
+
+export { exportDoc }
