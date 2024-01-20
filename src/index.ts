@@ -5,6 +5,10 @@ import { exportDoc } from "./docs";
 import { exportSheet } from "./sheets";
 import { exportFile } from "./file";
 
+/**
+ * The main entry point for the CLI
+ */
+
 program.name("flowdown").description("Use Google Drive as your CMS");
 
 let folderId = "";

@@ -1,18 +1,24 @@
 {
-  "name": "flowdown",
+  "name": "@flowjob/flowdown",
   "type": "module",
-  "version": "1.0.0",
+  "version": "1.0.1",
+  "main": "dist/index.js",
   "description": "Use a public Google Drive folder as a CMS",
-  "repository": "https://github.com/getflowjob/flowdown",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/getflowjob/flowdown.git"
+  },
   "author": "Flowjob Devs",
   "license": "Apache-2.0",
   "scripts": {
-    "build": "bun build ./src/index.ts --outdir ./.build --target node",
+    "build": "bun build ./src/index.ts --outdir ./dist --target node --minify",
     "standalone": "bun build ./src/index.ts --compile --outfile flowdown",
+    "publish": "npm publish --access=public",
     "prettier": "prettier -w -u src/**/*"
   },
   "dependencies": {
     "commander": "^11.1.0",
+    "jsdom": "^23.2.0",
     "mammoth": "^1.6.0",
     "node-html-markdown": "^1.3.0"
   },
@@ -21,5 +27,8 @@
     "@types/node": "^20.11.0",
     "bun-types": "^1.0.23",
     "prettier": "^3.2.1"
-  }
+  },
+  "files": [
+    "dist/index.js"
+  ]
 }

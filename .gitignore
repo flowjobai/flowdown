@@ -2,7 +2,6 @@ flowdown/
 
 # build output
 dist/
-.build/
 
 # generated types
 .astro/
