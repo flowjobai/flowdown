@@ -1,6 +1,6 @@
 import fs from "fs";
 import mammoth from "mammoth";
-import { NodeHtmlMarkdown, NodeHtmlMarkdownOptions } from 'node-html-markdown';
+import { NodeHtmlMarkdown } from 'node-html-markdown';
 import { JSDOM } from "jsdom";
 
 const nhm = new NodeHtmlMarkdown();
@@ -16,20 +16,28 @@ async function exportDoc(id: string, path: string) {
     }
     // Get the filename from the content-disposition header if available (should always be)
     let filename = response.headers.has("content-disposition") ? response.headers.get("content-disposition")!.split('"')[1] : id;
-    const arrayBuffer = await response.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
-    // Convert to html
-    const conversion = await mammoth.convertToHtml({ buffer: buffer });
-    // Remove the non printing characters that docs code block adds
-    const html = conversion.value.replace("", "").replace("", "");
-    //console.log(html);
-    const fm = frontmatter(html);
-    // Convert the html to markdown
-    const markdown = nhm.translate(fm.body);
+    const buffer = await response.arrayBuffer();
+    const converted = await convert(Buffer.from(buffer));
     // Write the markdown to a file
     const fullPath = path + "/" + filename.replace(".docx", ".md");
-    fs.writeFileSync(fullPath, fm.frontmatter + markdown);
+    fs.writeFileSync(fullPath, converted.fm + converted.md);
     console.log("Markdown written to", fullPath);
+}
+
+async function convert(buffer: Buffer) {
+    // Convert to html
+    // @ts-ignore
+    // const transform = mammoth.transforms.paragraph(transformCodeParagraph);
+    // const styleMap = [ "p[style-name='Code'] => pre:separator('\n')" ]
+    // const { value } = await mammoth.convertToHtml({ buffer: buffer }, { transformDocument: transform, styleMap: styleMap });
+    const { value } = await mammoth.convertToHtml({ buffer: buffer });
+    // Remove the non printing characters that docs code block adds
+    const html = value.replace("", "").replace("", "");
+    console.log(html);
+    const fm = frontmatter(html);
+    // Convert the html to markdown
+    const md = nhm.translate(fm.body);
+    return { fm, md }
 }
 
 // Detect and handle front-matter before converting to markdown
@@ -56,4 +64,22 @@ function frontmatter(html: string) {
     };
 }
 
-export { exportDoc };
+// A mammoth transformer to change monospaced fonts to code block
+const monospaceFonts = ["consolas", "courier", "courier new", "roboto mono", "monaco", "monospace"];
+function transformCodeParagraph(paragraph: any) {
+    // @ts-ignore
+    const runs = mammoth.transforms.getDescendantsOfType(paragraph, "run");
+    const isMatch = runs.length > 0 && runs.every((run: any) => {
+        return run.font && monospaceFonts.indexOf(run.font.toLowerCase()) !== -1;
+    });
+    if (isMatch) {
+        return {
+            ...paragraph,
+            styleId: "code",
+            styleName: "Code"
+        };
+    } 
+    return paragraph;
+}
+
+export { exportDoc, convert };

@@ -1,4 +1,4 @@
-import { getFolders, Folder } from "../src/folder";
+// import { getFolders, Folder } from "../src/folder";
 // import { expect, test } from "bun:test";
 
 // test("2 + 2", () => {
@@ -12,7 +12,7 @@ import { getFolders, Folder } from "../src/folder";
 //const folders = await getFolders("1aK91jp8954KOTOo5fJC4NUdwArqQyBvE", "flowdown");
 //folders.forEach((folder: Folder) => { console.log(folder.id, folder.path, folder.name) });
 
-const folders = await getFolders("1aK91jp8954KOTOo5fJC4NUdwArqQyBvE", "flowdown");
-console.log(folders);
+// const folders = await getFolders("1aK91jp8954KOTOo5fJC4NUdwArqQyBvE", "flowdown");
+// console.log(folders);
 
 

@@ -1,0 +1,51 @@
+<p><a id="_lrwpxwpnn9ri"></a><strong>Flowdown README</strong></p>
+<pre>---
+    author: Flowjob Devs
+    ---</pre>
+<h1><a id="_u8fnrq4qspg5"></a>Flowdown</h1>
+<p><strong>Use Google Drive as your CMS!</strong></p>
+<h3><a id="_8v6v77x84ohg"></a>Features</h3>
+<p>Author and store your content in Google Drive/Docs/Sheets then sync it to sources such as Astro content collections.
+</p>
+<p>Flowdown will connect to a publicly shared Google Drive link, enumerate the folder and export the content, converting
+    file formats on the way.</p>
+<table>
+    <thead>
+        <tr>
+            <th>
+                <p><strong>From</strong></p>
+            </th>
+            <th>
+                <p><strong>To</strong></p>
+            </th>
+        </tr>
+        <tr>
+            <th>
+                <p>Google Docs</p>
+            </th>
+            <th>
+                <p>Markdown</p>
+            </th>
+        </tr>
+        <tr>
+            <th>
+                <p>Google Sheets</p>
+            </th>
+            <th>
+                <p>CSV</p>
+            </th>
+        </tr>
+    </thead>
+</table>
+<p>No OAuth2 app needs to be configured in Google Cloud. Simply create a publicly shared link and pass the id to
+    Flowdown.</p>
+<h3><a id="_ctvhcdx735a2"></a>Front-matter Support</h3>
+<p>You can add front-matter to your Google Docs by surrounding it with --- at the top of the document. </p>
+<p>Two space YAML indentation is supported and will be preserved in the markdown. </p>
+<p>Any text above the front matter will be discarded so you can use this as a heading or comments for your document that
+    will not be converted into the markdown file.</p>
+<h3><a id="_7shk9mt93vdn"></a>Usage</h3>
+<p>Install using npm/pnpm/yarn/bun:</p>
+<pre>npm install @flowjob/flowdown --save-dev</pre>
+<p>Then use the Flowdown CLI:</p>
+<pre>

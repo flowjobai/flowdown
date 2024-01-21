@@ -2,17 +2,58 @@
 
 # Flowdown
 
-Use Google Drive as your CMS.
+Use Google Drive as your CMS
 
-## Features
+### Features
 
-Flowdown lets you author and store your content in Google drive then sync it to sources
-such as Astro content collections. 
+Author and store your content in Google Drive/Docs/Sheets then sync it to sources such as Astro content collections. 
 
-Flowdown will connect to Google Drive, enumerate a designated folder and then download the content
-converting file formats as needed.
+Flowdown will connect to a publicly shared Google Drive link, enumerate the folder and export the content, converting file formats on the way.
 
-- Goofle Docs -> Markdown
-- Google Sheets -> CSV
+- Google Docs > Markdown
+- Google Sheets > CSV
+
+No OAuth2 app needs to be configured in Google Cloud. Simply create a publicly shared link and pass the id to Flowdown.
+
+### Frontmatter Support
+
+You can add frontmatter to your Google Docs by surounding it with `---` at the top of the document. 
+
+Two space YAML indentation is supported and will be preserved in the markdown. 
+
+Any text above the front matter will be discarded so you can use this as a heading or comments for your document that will not be converted into the markdown file.
+
+### Usage
+
+Install using npm/pnpm/yarn/bun:
+
+`npm install @flowjob/flowdown --save-dev`
+
+Then use the Flowdown CLI:
+
+```
+Usage: flowdown [options] <id>
+
+Use Google Drive as your CMS
+
+Arguments:
+  id                    id of the root folder
+
+Options:
+  -f --folder <string>  export a specific folder
+  -d --dir <string>     the local export directory (default: "flowdown")
+  -h, --help            display help for command
+```  
+
+### Suggestions
+
+Use Pageless documents in Google Docs to create a single page of content.
+Turn off substutions
+
+
+
+
+
+
 
 
