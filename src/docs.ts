@@ -27,13 +27,13 @@ async function exportDoc(id: string, path: string) {
 async function convert(buffer: Buffer) {
     // Convert to html
     // @ts-ignore
-    // const transform = mammoth.transforms.paragraph(transformCodeParagraph);
-    // const styleMap = [ "p[style-name='Code'] => pre:separator('\n')" ]
-    // const { value } = await mammoth.convertToHtml({ buffer: buffer }, { transformDocument: transform, styleMap: styleMap });
-    const { value } = await mammoth.convertToHtml({ buffer: buffer });
+    const transform = mammoth.transforms.paragraph(transformCodeParagraph);
+    const styleMap = [ "p[style-name='Code'] => code:separator('\n')" ]
+    const { value } = await mammoth.convertToHtml({ buffer: buffer }, { transformDocument: transform, styleMap: styleMap });
+    ///const { value } = await mammoth.convertToHtml({ buffer: buffer });
     // Remove the non printing characters that docs code block adds
     const html = value.replace("", "").replace("", "");
-    console.log(html);
+    //console.log("****\n" + html + "\n****");
     const fm = frontmatter(html);
     // Convert the html to markdown
     const md = nhm.translate(fm.body);
