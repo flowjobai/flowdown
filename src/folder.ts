@@ -4,6 +4,11 @@
 
 // https://drive.google.com/uc?id=1I7KMarwMYnbBuWFAYkl4DoAogie5qYuq&export=download
 
+import { exportDoc } from "./docs";
+import { exportSheet } from "./sheets";
+import { exportFile } from "./file";
+import pm from "picomatch";
+
 const titleRegex = /<title>.* – Google Drive<\/title>/g;
 const folderRegex = /https:\/\/drive\.google\.com\/drive\/folders\/[-_0-9a-zA-Z]{33}/g;
 const docsRegex = /https:\/\/docs\.google\.com\/document\/d\/[-_0-9a-zA-Z]{44}/g;
@@ -25,7 +30,7 @@ const FOLDER_URL = "https://drive.google.com/drive/folders/";
 /**
  * Get a folder and all of its children
  */
-async function getFolders(id: string, filter: string, path: string = "", folders: Folder[] = [], root = true) {
+async function getFolders(id: string, path: string = "", folders: Folder[] = [], root = true) {
     const folder: Folder = {
         id: id,
         path,
@@ -54,7 +59,7 @@ async function getFolders(id: string, filter: string, path: string = "", folders
     const folderIds = getUrlIds(body, folderRegex, id);
     const childPath = root ? "" : path + "/" + folder.name;
     for (const id of folderIds) {
-        await getFolders(id, filter, childPath, folders, false);
+        await getFolders(id, childPath, folders, false);
     }
     return folders;
 }
@@ -73,4 +78,27 @@ function getUrlIds(body: string, regex: RegExp, exclude?: string) {
     return [...ids.values()];
 }
 
-export { getFolders, type Folder };
+async function exportFolders(dir: string, folders: Folder[], matcher: pm.Matcher) {
+    console.log("Exporting to", dir);
+    for (const folder of folders) {
+        console.log("Processing", folder.id);
+        let path: string;
+        if (folder.root) {
+            path = dir;
+        } else {
+            path = [dir, folder.path, folder.name].filter((dir) => dir !== "").join("/");
+        }
+        // Export any files/docs
+        for (const id of folder.docs) {
+            await exportDoc(id, path, matcher);
+        }
+        for (const id of folder.sheets) {
+            await exportSheet(id, path, matcher);
+        }
+        for (const id of folder.files) {
+            await exportFile(id, path, matcher);
+        }
+    }
+}
+
+export { getFolders, exportFolders, type Folder };

@@ -1,12 +1,13 @@
 import fs from "fs";
 import mammoth from "mammoth";
-import { NodeHtmlMarkdown } from 'node-html-markdown';
+import { NodeHtmlMarkdown } from "node-html-markdown";
 import { JSDOM } from "jsdom";
+import pm from "picomatch";
 
 const nhm = new NodeHtmlMarkdown();
 const DOC_URL = "https://docs.google.com/document/export?format=docx&id=";
 
-async function exportDoc(id: string, path: string) {
+async function exportDoc(id: string, path: string, matcher: pm.Matcher) {
     const url = DOC_URL + id;
     // Get the docx file into a memory buffer
     console.log("Fetching", url);
@@ -20,15 +21,21 @@ async function exportDoc(id: string, path: string) {
     const converted = await convert(Buffer.from(buffer));
     // Write the markdown to a file
     const fullPath = path + "/" + filename.replace(".docx", ".md");
-    fs.writeFileSync(fullPath, converted.fm + converted.md);
-    console.log("Markdown written to", fullPath);
+    if (matcher(fullPath)) {
+        fs.mkdirSync(path, { recursive: true });
+        fs.writeFileSync(fullPath, converted.fm + converted.md);
+        console.log("Markdown written to", fullPath);
+    }
+    else {
+        console.log("File skipped", fullPath);
+    }
 }
 
 async function convert(buffer: Buffer) {
     // Convert to html
     // @ts-ignore
     const transform = mammoth.transforms.paragraph(transformCodeParagraph);
-    const styleMap = [ "p[style-name='Code'] => code:separator('\n')" ]
+    const styleMap = ["p[style-name='Code'] => code:separator('\n')"];
     const { value } = await mammoth.convertToHtml({ buffer: buffer }, { transformDocument: transform, styleMap: styleMap });
     ///const { value } = await mammoth.convertToHtml({ buffer: buffer });
     // Remove the non printing characters that docs code block adds
@@ -37,7 +44,7 @@ async function convert(buffer: Buffer) {
     const fm = frontmatter(html);
     // Convert the html to markdown
     const md = nhm.translate(fm.body);
-    return { fm, md }
+    return { fm, md };
 }
 
 // Detect and handle front-matter before converting to markdown
@@ -69,16 +76,18 @@ const monospaceFonts = ["consolas", "courier", "courier new", "roboto mono", "mo
 function transformCodeParagraph(paragraph: any) {
     // @ts-ignore
     const runs = mammoth.transforms.getDescendantsOfType(paragraph, "run");
-    const isMatch = runs.length > 0 && runs.every((run: any) => {
-        return run.font && monospaceFonts.indexOf(run.font.toLowerCase()) !== -1;
-    });
+    const isMatch =
+        runs.length > 0 &&
+        runs.every((run: any) => {
+            return run.font && monospaceFonts.indexOf(run.font.toLowerCase()) !== -1;
+        });
     if (isMatch) {
         return {
             ...paragraph,
             styleId: "code",
-            styleName: "Code"
+            styleName: "Code",
         };
-    } 
+    }
     return paragraph;
 }
 
